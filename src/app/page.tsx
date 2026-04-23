@@ -107,6 +107,26 @@ export default function Home() {
     await supabase.auth.signInWithOAuth({ provider: 'google' });
   };
 
+  const loginWithEmail = async (email: string, pass: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: pass,
+    });
+    if (error) alert(error.message);
+  };
+
+  const signupWithEmail = async (email: string, pass: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password: pass,
+    });
+    if (error) {
+      alert(error.message);
+    } else {
+      alert("Check your email for the confirmation link!");
+    }
+  };
+
   const logout = async () => {
     await supabase.auth.signOut();
   };
@@ -180,6 +200,8 @@ export default function Home() {
         connectWallet={connectWallet}
         loginWithGitHub={loginWithGitHub}
         loginWithGoogle={loginWithGoogle}
+        loginWithEmail={loginWithEmail}
+        signupWithEmail={signupWithEmail}
         logout={logout}
       />
       
