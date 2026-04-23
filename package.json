@@ -18,7 +18,8 @@
     "ethers": "^6.16.0",
     "next": "^16.2.4",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "supabase": "^2.93.1"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

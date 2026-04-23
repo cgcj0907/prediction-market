@@ -90,13 +90,54 @@ export default function Home() {
   }, []);
 
   const connectWallet = async () => {
-    if (!provider) return alert("Please install MetaMask!");
-    const accounts = await provider.send("eth_requestAccounts", []);
-    setAccount(accounts[0]);
-    const sig = await provider.getSigner();
-    setSigner(sig);
-    // 连接钱包后也可以再刷新一次状态
-    loadMarkets();
+    if (typeof window !== "undefined" && (window as any).ethereum) {
+      try {
+        const prov = new ethers.BrowserProvider((window as any).ethereum);
+        
+        // 强制切换或添加到 Sepolia 网络 (Chain ID: 11155111 -> 0xaa36a7)
+        const targetChainId = "0xaa36a7";
+        const currentNetwork = await prov.getNetwork();
+        
+        if (currentNetwork.chainId !== BigInt(11155111)) {
+          try {
+            await (window as any).ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: targetChainId }],
+            });
+          } catch (switchError: any) {
+            // 如果用户的钱包里没有添加 Sepolia，则请求添加
+            if (switchError.code === 4902) {
+              await (window as any).ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [
+                  {
+                    chainId: targetChainId,
+                    chainName: 'Sepolia Testnet',
+                    nativeCurrency: { name: 'Sepolia ETH', symbol: 'SEP', decimals: 18 },
+                    rpcUrls: ['https://rpc.sepolia.org'],
+                    blockExplorerUrls: ['https://sepolia.etherscan.io'],
+                  },
+                ],
+              });
+            } else {
+              throw switchError;
+            }
+          }
+        }
+
+        const accounts = await prov.send("eth_requestAccounts", []);
+        setAccount(accounts[0]);
+        setProvider(prov);
+        const sig = await prov.getSigner();
+        setSigner(sig);
+        // 连接钱包后也可以再刷新一次状态
+        loadMarkets();
+      } catch (error) {
+        console.error("User rejected request or network switch failed", error);
+      }
+    } else {
+      alert("Please install MetaMask!");
+    }
   };
 
   const loginWithGitHub = async () => {
@@ -105,26 +146,6 @@ export default function Home() {
 
   const loginWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({ provider: 'google' });
-  };
-
-  const loginWithEmail = async (email: string, pass: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: pass,
-    });
-    if (error) alert(error.message);
-  };
-
-  const signupWithEmail = async (email: string, pass: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password: pass,
-    });
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Check your email for the confirmation link!");
-    }
   };
 
   const logout = async () => {
@@ -200,8 +221,6 @@ export default function Home() {
         connectWallet={connectWallet}
         loginWithGitHub={loginWithGitHub}
         loginWithGoogle={loginWithGoogle}
-        loginWithEmail={loginWithEmail}
-        signupWithEmail={signupWithEmail}
         logout={logout}
       />
       

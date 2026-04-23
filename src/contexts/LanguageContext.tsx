@@ -9,10 +9,6 @@ export const translations = {
     // Navbar
     loginGithub: "GitHub",
     loginGoogle: "Google",
-    loginEmail: "Email Login",
-    signupEmail: "Sign Up",
-    emailPlaceholder: "Email address",
-    passwordPlaceholder: "Password",
     logout: "Log out",
     connectWallet: "Connect Wallet",
     // Hero
@@ -61,10 +57,6 @@ export const translations = {
     // Navbar
     loginGithub: "GitHub 登录",
     loginGoogle: "Google 登录",
-    loginEmail: "邮箱登录",
-    signupEmail: "注册",
-    emailPlaceholder: "邮箱地址",
-    passwordPlaceholder: "密码",
     logout: "退出登录",
     connectWallet: "连接钱包",
     // Hero
