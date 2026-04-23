@@ -44,7 +44,7 @@ export default function MarketCard({
             }`}
           >
             {market.settled
-              ? (market.outcome === 0n ? t.settledYes : t.settledNo)
+              ? (market.outcome === BigInt(0) ? t.settledYes : t.settledNo)
               : isExpired
               ? t.awaiting
               : t.live}
