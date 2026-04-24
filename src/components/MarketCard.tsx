@@ -41,7 +41,7 @@ export default function MarketCard({ market, predict, requestSettlement, claim }
   }, [market.id, showChart]);
 
   const totalPool = market.totalYesPool + market.totalNoPool;
-  const yesRatio = totalPool > 0 ? Number((market.totalYesPool * 100n) / totalPool) : 50;
+  const yesRatio = totalPool > BigInt(0) ? Number((market.totalYesPool * BigInt(100)) / totalPool) : 50;
   const noRatio = 100 - yesRatio;
 
   const now = Math.floor(Date.now() / 1000);
