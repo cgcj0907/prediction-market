@@ -37,6 +37,7 @@ export const translations = {
     tip2: "Must include an exact timezone or block number if it's time-sensitive.",
     tip3: "Vague questions ('Will AI be good?') may result in unpredictable or failed Oracle settlement.",
     // MarketCard
+    expiresIn: "Expires in",
     live: "Live",
     awaiting: "Awaiting Settlement",
     settledYes: "Settled: YES",
@@ -97,6 +98,7 @@ export const translations = {
     tip2: "如果是时间敏感的问题，必须包含确切的时区或区块高度。",
     tip3: "模糊的问题（“AI 会变好吗？”）可能导致预言机结算失败或产生不可预测的结果。",
     // MarketCard
+    expiresIn: "到期倒计时",
     live: "进行中",
     awaiting: "等待结算",
     settledYes: "已结算: YES",
