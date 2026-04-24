@@ -5,6 +5,7 @@ import { ethers } from "ethers";
 import { supabase } from "../lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { useLanguage } from "../contexts/LanguageContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Components
 import Navbar from "../components/Navbar";
@@ -169,44 +170,45 @@ export default function Home() {
     }
   };
 
-  const predict = async (marketId: number, prediction: number) => {
+  const predict = async (marketId: bigint, prediction: bigint, amount: string) => {
     if (!signer) return alert("Please connect wallet first!");
     const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
     try {
-      const tx = await contract.predict(marketId, prediction, { value: ethers.parseEther("0.01") });
+      const tx = await contract.predict(marketId, prediction, { value: ethers.parseEther(amount) });
       await tx.wait();
       alert("Prediction submitted!");
       loadMarkets();
-    } catch (e) {
-      console.error(e);
-      alert("Failed to predict");
+    } catch (err: any) {
+      console.error(err);
+      alert("Prediction failed: " + err.message);
     }
   };
 
-  const requestSettlement = async (marketId: number) => {
+  const requestSettlement = async (marketId: bigint) => {
     if (!signer) return alert("Please connect wallet first!");
     const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
     try {
       const tx = await contract.requestSettlement(marketId);
       await tx.wait();
-      alert("Settlement requested! DeepSeek node will process it.");
+      alert("Settlement requested! The oracle will verify this shortly.");
       loadMarkets();
-    } catch (e) {
-      console.error(e);
-      alert("Failed to request settlement");
+    } catch (err: any) {
+      console.error(err);
+      alert("Request failed: " + err.message);
     }
   };
 
-  const claim = async (marketId: number) => {
+  const claim = async (marketId: bigint) => {
     if (!signer) return alert("Please connect wallet first!");
     const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
     try {
       const tx = await contract.claim(marketId);
       await tx.wait();
-      alert("Claimed successfully!");
-    } catch (e) {
-      console.error(e);
-      alert("Failed to claim");
+      alert("Winnings claimed successfully!");
+      loadMarkets();
+    } catch (err: any) {
+      console.error(err);
+      alert("Claim failed: " + err.message);
     }
   };
 
@@ -265,7 +267,11 @@ export default function Home() {
           </div>
 
           {!account && markets.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300"
+            >
               <div className="mx-auto h-12 w-12 text-gray-400 mb-4">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -281,19 +287,32 @@ export default function Home() {
                   {t.connectWallet}
                 </button>
               </div>
-            </div>
+            </motion.div>
           ) : (
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {(activeTab === "live" ? liveMarkets : settledMarkets).map((m) => (
-                <MarketCard
-                  key={m.id}
-                  market={m}
-                  predict={predict}
-                  requestSettlement={requestSettlement}
-                  claim={claim}
-                />
-              ))}
-            </div>
+            <motion.div 
+              layout
+              className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
+            >
+              <AnimatePresence mode="popLayout">
+                {(activeTab === "live" ? liveMarkets : settledMarkets).map((m, index) => (
+                  <motion.div
+                    key={m.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                  >
+                    <MarketCard
+                      market={m}
+                      predict={predict}
+                      requestSettlement={requestSettlement}
+                      claim={claim}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
           )}
 
           {account && (activeTab === "live" ? liveMarkets : settledMarkets).length === 0 && (

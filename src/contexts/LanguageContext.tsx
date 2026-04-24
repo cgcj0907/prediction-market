@@ -9,8 +9,14 @@ export const translations = {
     // Navbar
     loginGithub: "GitHub",
     loginGoogle: "Google",
+    loginEmail: "Email Login",
+    signupEmail: "Sign Up",
+    emailPlaceholder: "Email address",
+    passwordPlaceholder: "Password",
     logout: "Log out",
     connectWallet: "Connect Wallet",
+    docs: "Docs",
+    tech: "Tech",
     // Hero
     heroTitle1: "Decentralized",
     heroTitle2: "Truth & Markets",
@@ -25,6 +31,7 @@ export const translations = {
     expiresLabel: "Expires In",
     days: "days",
     createBtn: "Create Market",
+    creatingBtn: "Creating...",
     tipsTitle: "💡 Tips for a verifiable question:",
     tip1: "Must be objectively verifiable (e.g. clearly state the source of truth like 'on Binance').",
     tip2: "Must include an exact timezone or block number if it's time-sensitive.",
@@ -44,6 +51,9 @@ export const translations = {
     predictNote: "Winning predictions split the losing pool proportionally. Losing predictions forfeit 100% of their stake.",
     triggerOracle: "Trigger Settlement Oracle",
     claimWinnings: "Claim Winnings",
+    predicting: "Processing...",
+    settling: "Settling...",
+    claiming: "Claiming...",
     // Page
     marketsTitle: "Markets",
     tabLive: "Live",
@@ -51,14 +61,22 @@ export const translations = {
     noMarkets: "No markets found",
     connectToView: "Connect your wallet to view active predictions.",
     noMarketsCategory: "No markets in this category.",
-    footer: "PredictMarket. Decentralized Truth Oracle with DeepSeek."
+    footer: "PredictMarket. Decentralized Truth Oracle with DeepSeek.",
+    betAmountPlaceholder: "Amount (ETH)",
+    aiPredictionTitle: "AI Probability Forecast"
   },
   zh: {
     // Navbar
     loginGithub: "GitHub 登录",
     loginGoogle: "Google 登录",
+    loginEmail: "邮箱登录",
+    signupEmail: "注册",
+    emailPlaceholder: "邮箱地址",
+    passwordPlaceholder: "密码",
     logout: "退出登录",
     connectWallet: "连接钱包",
+    docs: "文档",
+    tech: "技术白皮书",
     // Hero
     heroTitle1: "去中心化",
     heroTitle2: "真相与预测市场",
@@ -73,6 +91,7 @@ export const translations = {
     expiresLabel: "到期时间",
     days: "天",
     createBtn: "创建市场",
+    creatingBtn: "创建中...",
     tipsTitle: "💡 可验证问题的编写提示：",
     tip1: "必须客观可验证（例如明确指出数据源，如“在币安上”）。",
     tip2: "如果是时间敏感的问题，必须包含确切的时区或区块高度。",
@@ -92,6 +111,9 @@ export const translations = {
     predictNote: "获胜的预测将按比例瓜分失败者的资金池。失败的预测将损失 100% 的质押本金。",
     triggerOracle: "触发预言机结算",
     claimWinnings: "提取奖金",
+    predicting: "处理中...",
+    settling: "结算中...",
+    claiming: "提取中...",
     // Page
     marketsTitle: "市场大厅",
     tabLive: "进行中",
@@ -99,7 +121,9 @@ export const translations = {
     noMarkets: "未找到市场",
     connectToView: "连接钱包以查看活跃的预测。",
     noMarketsCategory: "该分类下暂无市场。",
-    footer: "PredictMarket. 基于 DeepSeek 的去中心化真相预言机。"
+    footer: "PredictMarket. 基于 DeepSeek 的去中心化真相预言机。",
+    betAmountPlaceholder: "质押金额 (ETH)",
+    aiPredictionTitle: "AI 概率预测趋势"
   }
 };
 
