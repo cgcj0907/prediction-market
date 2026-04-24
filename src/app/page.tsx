@@ -216,7 +216,7 @@ export default function Home() {
   const settledMarkets = markets.filter(m => m.settled);
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 selection:bg-blue-100 selection:text-blue-900">
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-indigo-500 selection:text-white pb-20">
       <Navbar
         user={user}
         account={account}

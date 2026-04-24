@@ -1,83 +1,122 @@
 "use client";
 
+import { useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { motion } from "framer-motion";
+import { Lightbulb, Info } from "lucide-react";
 
 interface CreateMarketProps {
-  newQuestion: string;
-  setNewQuestion: (q: string) => void;
-  expiresInDays: string;
-  setExpiresInDays: (d: string) => void;
-  createMarket: () => void;
+  createMarket: (question: string, expiresAt: number) => Promise<void>;
+  account: string;
 }
 
-export default function CreateMarket({
-  newQuestion,
-  setNewQuestion,
-  expiresInDays,
-  setExpiresInDays,
-  createMarket,
-}: CreateMarketProps) {
+export default function CreateMarket({ createMarket, account }: CreateMarketProps) {
   const { t } = useLanguage();
+  const [question, setQuestion] = useState("");
+  const [days, setDays] = useState(7);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!question || days <= 0) return;
+
+    setIsSubmitting(true);
+    const expiresAt = Math.floor(Date.now() / 1000) + days * 24 * 60 * 60;
+    try {
+      await createMarket(question, expiresAt);
+      setQuestion("");
+      setDays(7);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!account) return null;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
-            {t.createMarketTitle}
-          </h2>
-          <p className="mt-2 text-gray-500">
-            {t.createMarketSubtitle}
-          </p>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.1 }}
+      className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-12 relative overflow-hidden"
+    >
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+      
+      <div className="flex items-center gap-3 mb-2">
+        <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+          <Lightbulb size={24} />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900">{t.createTitle}</h2>
+      </div>
+      <p className="text-gray-500 mb-8">{t.createDesc}</p>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            {t.questionLabel}
+          </label>
+          <input
+            type="text"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-gray-400"
+            placeholder={t.questionPlaceholder}
+            required
+          />
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 items-end mb-4">
-          <div className="flex-1 w-full">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t.questionLabel}
-            </label>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            {t.daysLabel}
+          </label>
+          <div className="flex items-center">
             <input
-              type="text"
-              placeholder={t.questionPlaceholder}
-              className="w-full border-gray-300 border px-4 py-3 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-shadow outline-none"
-              value={newQuestion}
-              onChange={(e) => setNewQuestion(e.target.value)}
+              type="number"
+              value={days}
+              onChange={(e) => setDays(Number(e.target.value))}
+              min="1"
+              max="365"
+              className="w-32 px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+              required
             />
+            <span className="ml-3 text-gray-500 font-medium">Days</span>
           </div>
-          
-          <div className="w-full md:w-32">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t.expiresLabel}
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                min="1"
-                className="w-full border-gray-300 border px-4 py-3 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-shadow outline-none"
-                value={expiresInDays}
-                onChange={(e) => setExpiresInDays(e.target.value)}
-              />
-              <span className="absolute right-3 top-3 text-gray-500">{t.days}</span>
-            </div>
-          </div>
-
-          <button
-            onClick={createMarket}
-            className="w-full md:w-auto px-8 py-3 bg-gray-900 text-white font-bold rounded-xl shadow hover:bg-gray-800 transition-all active:scale-95"
-          >
-            {t.createBtn}
-          </button>
         </div>
-        
-        <div className="bg-yellow-50 text-yellow-800 text-xs md:text-sm p-4 rounded-xl border border-yellow-200">
-          <p className="font-semibold mb-1">{t.tipsTitle}</p>
-          <ul className="list-disc list-inside ml-4 space-y-1">
-            <li>{t.tip1}</li>
-            <li>{t.tip2}</li>
-            <li>{t.tip3}</li>
-          </ul>
+
+        <button
+          type="submit"
+          disabled={isSubmitting || !question}
+          className={`w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-all transform active:scale-[0.98] ${
+            isSubmitting || !question
+              ? "bg-gray-300 cursor-not-allowed shadow-none"
+              : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+          }`}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {t.creatingBtn}
+            </span>
+          ) : (
+            t.createBtn
+          )}
+        </button>
+      </form>
+
+      <div className="mt-8 bg-amber-50/80 rounded-xl p-5 border border-amber-100">
+        <div className="flex items-start gap-3">
+          <Info className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-sm font-bold text-amber-800 mb-1">{t.tipsTitle}</h4>
+            <p className="text-sm text-amber-700/90 leading-relaxed">
+              {t.tipsText}
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
