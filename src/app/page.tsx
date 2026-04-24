@@ -30,8 +30,6 @@ export default function Home() {
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [account, setAccount] = useState("");
   const [markets, setMarkets] = useState<any[]>([]);
-  const [newQuestion, setNewQuestion] = useState("");
-  const [expiresInDays, setExpiresInDays] = useState("1");
   
   // Supabase Auth State
   const [user, setUser] = useState<User | null>(null);
@@ -153,20 +151,21 @@ export default function Home() {
     await supabase.auth.signOut();
   };
 
-  const createMarket = async () => {
-    if (!signer) return alert("Please connect wallet first!");
-    if (!newQuestion) return alert("Please enter a question!");
+  const createMarket = async (question: string, expiresAt: number) => {
+    if (!signer) {
+      alert("Please connect wallet first!");
+      return;
+    }
     const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-    const expiresAt = Math.floor(Date.now() / 1000) + Number(expiresInDays) * 86400;
     try {
-      const tx = await contract.createMarket(newQuestion, expiresAt);
+      const tx = await contract.createMarket(question, expiresAt);
       await tx.wait();
       alert("Market Created!");
-      setNewQuestion("");
       loadMarkets();
     } catch (e) {
       console.error(e);
       alert("Failed to create market");
+      throw e;
     }
   };
 
@@ -231,10 +230,7 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
         <section>
           <CreateMarket
-            newQuestion={newQuestion}
-            setNewQuestion={setNewQuestion}
-            expiresInDays={expiresInDays}
-            setExpiresInDays={setExpiresInDays}
+            account={account}
             createMarket={createMarket}
           />
         </section>

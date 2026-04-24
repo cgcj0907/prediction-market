@@ -46,9 +46,9 @@ export default function CreateMarket({ createMarket, account }: CreateMarketProp
         <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
           <Lightbulb size={24} />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">{t.createTitle}</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t.createMarketTitle}</h2>
       </div>
-      <p className="text-gray-500 mb-8">{t.createDesc}</p>
+      <p className="text-gray-500 mb-8">{t.createMarketSubtitle}</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
@@ -67,7 +67,7 @@ export default function CreateMarket({ createMarket, account }: CreateMarketProp
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            {t.daysLabel}
+            {t.expiresLabel}
           </label>
           <div className="flex items-center">
             <input
@@ -111,9 +111,11 @@ export default function CreateMarket({ createMarket, account }: CreateMarketProp
           <Info className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div>
             <h4 className="text-sm font-bold text-amber-800 mb-1">{t.tipsTitle}</h4>
-            <p className="text-sm text-amber-700/90 leading-relaxed">
-              {t.tipsText}
-            </p>
+            <div className="text-sm text-amber-700/90 leading-relaxed space-y-1">
+              <p>• {t.tip1}</p>
+              <p>• {t.tip2}</p>
+              <p>• {t.tip3}</p>
+            </div>
           </div>
         </div>
       </div>
