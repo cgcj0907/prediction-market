@@ -20,7 +20,18 @@ const ABI = [
   "function predict(uint256 marketId, uint8 prediction) payable",
   "function requestSettlement(uint256 marketId)",
   "function claim(uint256 marketId)",
-  "function markets(uint256) view returns (address creator, uint48 createdAt, uint48 expiresAt, uint48 settledAt, bool settled, uint8 outcome, uint256 totalYesPool, uint256 totalNoPool, string question)"
+  "function markets(uint256) view returns (address creator, uint48 createdAt, uint48 expiresAt, uint48 settledAt, bool settled, uint8 outcome, uint256 totalYesPool, uint256 totalNoPool, string question)",
+  "function predictions(uint256, address) view returns (uint256 amount, uint8 prediction, bool claimed)",
+  "error MarketDoesNotExist()",
+  "error MarketNotExpired()",
+  "error MarketAlreadySettled()",
+  "error MarketNotSettled()",
+  "error AlreadyPredicted()",
+  "error InvalidAmount()",
+  "error NothingToClaim()",
+  "error AlreadyClaimed()",
+  "error TransferFailed()",
+  "error OnlyOracle()"
 ];
 
 export default function Home() {
@@ -207,7 +218,15 @@ export default function Home() {
       loadMarkets();
     } catch (err: any) {
       console.error(err);
-      alert("Claim failed: " + err.message);
+      if (err.message && err.message.includes("0x969bf728")) {
+        alert("Claim failed: Nothing to claim (you didn't predict, or predicted incorrectly).");
+      } else if (err.message && err.message.includes("0x646cf558")) {
+        alert("Claim failed: Already claimed.");
+      } else {
+        // ethers v6 often parses custom errors into err.revert.name or err.info.error.name
+        const errorName = err.revert?.name || err.info?.error?.name || err.reason;
+        alert("Claim failed: " + (errorName ? errorName : err.message));
+      }
     }
   };
 
@@ -215,117 +234,125 @@ export default function Home() {
   const settledMarkets = markets.filter(m => m.settled);
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-indigo-500 selection:text-white pb-20">
-      <Navbar
-        user={user}
-        account={account}
-        connectWallet={connectWallet}
-        loginWithGitHub={loginWithGitHub}
-        loginWithGoogle={loginWithGoogle}
-        logout={logout}
-      />
-      
-      <Hero />
+    <div className="min-h-screen bg-slate-50 relative font-sans selection:bg-indigo-500 selection:text-white pb-20">
+      {/* Global Background Glow */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-indigo-500/10 rounded-full blur-[120px] mix-blend-multiply opacity-70 animate-pulse-slow"></div>
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] mix-blend-multiply opacity-70"></div>
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
-        <section>
-          <CreateMarket
-            account={account}
-            createMarket={createMarket}
-          />
-        </section>
+      <div className="relative z-10">
+        <Navbar
+          user={user}
+          account={account}
+          connectWallet={connectWallet}
+          loginWithGitHub={loginWithGitHub}
+          loginWithGoogle={loginWithGoogle}
+          logout={logout}
+        />
+        
+        <Hero />
 
-        <section>
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-extrabold tracking-tight">{t.marketsTitle}</h2>
-            <div className="flex bg-gray-200 p-1 rounded-xl shadow-inner">
-              <button
-                onClick={() => setActiveTab("live")}
-                className={`px-6 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                  activeTab === "live"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                {t.tabLive} ({liveMarkets.length})
-              </button>
-              <button
-                onClick={() => setActiveTab("settled")}
-                className={`px-6 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                  activeTab === "settled"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                {t.tabSettled} ({settledMarkets.length})
-              </button>
-            </div>
-          </div>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+          <section>
+            <CreateMarket
+              account={account}
+              createMarket={createMarket}
+            />
+          </section>
 
-          {!account && markets.length === 0 ? (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300"
-            >
-              <div className="mx-auto h-12 w-12 text-gray-400 mb-4">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
-              </div>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">{t.noMarkets}</h3>
-              <p className="mt-1 text-sm text-gray-500">{t.connectToView}</p>
-              <div className="mt-6">
+          <section>
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 drop-shadow-sm">{t.marketsTitle}</h2>
+              <div className="flex bg-white/60 backdrop-blur-md p-1.5 rounded-2xl shadow-sm border border-gray-200/50">
                 <button
-                  onClick={connectWallet}
-                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                  onClick={() => setActiveTab("live")}
+                  className={`px-6 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
+                    activeTab === "live"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50/80"
+                  }`}
                 >
-                  {t.connectWallet}
+                  {t.tabLive} ({liveMarkets.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab("settled")}
+                  className={`px-6 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
+                    activeTab === "settled"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50/80"
+                  }`}
+                >
+                  {t.tabSettled} ({settledMarkets.length})
                 </button>
               </div>
-            </motion.div>
-          ) : (
-            <motion.div 
-              layout
-              className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
-            >
-              <AnimatePresence mode="popLayout">
-                {(activeTab === "live" ? liveMarkets : settledMarkets).map((m, index) => (
-                  <motion.div
-                    key={m.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                  >
-                    <MarketCard
-                      market={m}
-                      predict={predict}
-                      requestSettlement={requestSettlement}
-                      claim={claim}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
-          )}
-
-          {account && (activeTab === "live" ? liveMarkets : settledMarkets).length === 0 && (
-            <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300 text-gray-500">
-              {t.noMarketsCategory}
             </div>
-          )}
-        </section>
-      </main>
 
-      <footer className="bg-white border-t border-gray-200 mt-20">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-base text-gray-500">
-            &copy; {new Date().getFullYear()} {t.footer}
-          </p>
-        </div>
-      </footer>
+            {!account && markets.length === 0 ? (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-24 bg-white/50 backdrop-blur-sm rounded-3xl border border-dashed border-indigo-200 shadow-sm"
+              >
+                <div className="mx-auto h-16 w-16 text-indigo-400 mb-6 bg-indigo-50 rounded-full flex items-center justify-center">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-8 h-8">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </div>
+                <h3 className="mt-2 text-xl font-bold text-gray-900">{t.noMarkets}</h3>
+                <p className="mt-2 text-md text-gray-500">{t.connectToView}</p>
+                <div className="mt-8">
+                  <button
+                    onClick={connectWallet}
+                    className="inline-flex items-center px-6 py-3 border border-transparent shadow-lg shadow-indigo-200 text-base font-bold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none transition-all transform hover:scale-105 active:scale-95"
+                  >
+                    {t.connectWallet}
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div 
+                layout
+                className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
+              >
+                <AnimatePresence mode="popLayout">
+                  {(activeTab === "live" ? liveMarkets : settledMarkets).map((m, index) => (
+                    <motion.div
+                      key={m.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                    >
+                      <MarketCard
+                        market={m}
+                        predict={predict}
+                        requestSettlement={requestSettlement}
+                        claim={claim}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            )}
+
+            {account && (activeTab === "live" ? liveMarkets : settledMarkets).length === 0 && (
+              <div className="text-center py-20 bg-white/50 backdrop-blur-sm rounded-3xl border border-dashed border-gray-300 text-gray-500 font-medium">
+                {t.noMarketsCategory}
+              </div>
+            )}
+          </section>
+        </main>
+
+        <footer className="bg-white/80 backdrop-blur-md border-t border-gray-200/50 mt-20">
+          <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <p className="text-center text-base text-gray-500 font-medium">
+              &copy; {new Date().getFullYear()} {t.footer}
+            </p>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

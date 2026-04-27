@@ -38,35 +38,35 @@ export default function CreateMarket({ createMarket, account }: CreateMarketProp
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
-      className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-12 relative overflow-hidden"
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300"
     >
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80 group-hover:opacity-100 transition-opacity"></div>
       
-      <div className="flex items-center gap-3 mb-2">
-        <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
-          <Lightbulb size={24} />
+      <div className="flex items-center gap-4 mb-3">
+        <div className="p-2.5 bg-indigo-50 rounded-xl text-indigo-600 shadow-sm border border-indigo-100">
+          <Lightbulb size={24} className="animate-pulse-slow" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">{t.createMarketTitle}</h2>
+        <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">{t.createMarketTitle}</h2>
       </div>
-      <p className="text-gray-500 mb-8">{t.createMarketSubtitle}</p>
+      <p className="text-gray-500 mb-8 font-medium text-sm ml-14">{t.createMarketSubtitle}</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <div className="group/input">
+          <label className="block text-sm font-bold text-gray-700 mb-2.5 group-focus-within/input:text-indigo-600 transition-colors">
             {t.questionLabel}
           </label>
           <input
             type="text"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-gray-400"
+            className="w-full px-5 py-4 bg-gray-50/50 border border-gray-200 rounded-xl text-gray-900 font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-gray-400 focus:bg-white shadow-inner"
             placeholder={t.questionPlaceholder}
             required
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <div className="group/input">
+          <label className="block text-sm font-bold text-gray-700 mb-2.5 group-focus-within/input:text-indigo-600 transition-colors">
             {t.expiresLabel}
           </label>
           <div className="flex items-center">
@@ -76,24 +76,24 @@ export default function CreateMarket({ createMarket, account }: CreateMarketProp
               onChange={(e) => setDays(Number(e.target.value))}
               min="1"
               max="365"
-              className="w-32 px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+              className="w-32 px-5 py-4 bg-gray-50/50 border border-gray-200 rounded-xl text-gray-900 font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all focus:bg-white shadow-inner"
               required
             />
-            <span className="ml-3 text-gray-500 font-medium">Days</span>
+            <span className="ml-4 text-gray-500 font-bold tracking-wide uppercase text-sm">Days</span>
           </div>
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting || !question}
-          className={`w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-all transform active:scale-[0.98] ${
+          className={`w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-all transform active:scale-[0.98] relative overflow-hidden ${
             isSubmitting || !question
               ? "bg-gray-300 cursor-not-allowed shadow-none"
-              : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
+              : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg hover:-translate-y-0.5"
           }`}
         >
           {isSubmitting ? (
-            <span className="flex items-center justify-center gap-2">
+            <span className="flex items-center justify-center gap-3">
               <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -106,12 +106,12 @@ export default function CreateMarket({ createMarket, account }: CreateMarketProp
         </button>
       </form>
 
-      <div className="mt-8 bg-amber-50/80 rounded-xl p-5 border border-amber-100">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+      <div className="mt-10 bg-amber-50/80 rounded-2xl p-6 border border-amber-100 shadow-sm backdrop-blur-sm">
+        <div className="flex items-start gap-4">
+          <Info className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" />
           <div>
-            <h4 className="text-sm font-bold text-amber-800 mb-1">{t.tipsTitle}</h4>
-            <div className="text-sm text-amber-700/90 leading-relaxed space-y-1">
+            <h4 className="text-base font-bold text-amber-900 mb-2">{t.tipsTitle}</h4>
+            <div className="text-sm text-amber-800/90 leading-relaxed space-y-1.5 font-medium">
               <p>• {t.tip1}</p>
               <p>• {t.tip2}</p>
               <p>• {t.tip3}</p>
